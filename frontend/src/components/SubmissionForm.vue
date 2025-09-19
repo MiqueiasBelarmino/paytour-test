@@ -96,3 +96,69 @@
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref } from "vue"
+import axios from "axios"
+
+const form = ref({
+  name: "",
+  email: "",
+  phone: "",
+  desired_role: "",
+  schooling: "",
+  observations: "",
+})
+
+const file = ref(null)
+const loading = ref(false)
+const message = ref("")
+
+function handleFileUpload(event) {
+  file.value = event.target.files[0]
+}
+
+async function submitForm() {
+  try {
+    loading.value = true
+    message.value = ""
+
+    const formData = new FormData()
+    for (const key in form.value) {
+      formData.append(key, form.value[key])
+    }
+    if (file.value) {
+      formData.append("file", file.value)
+    }
+
+    const response = await axios.post(
+      "http://127.0.0.1:8000/api/submissions",
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    )
+
+    message.value = "Currículo enviado com sucesso!"
+    console.log(response.data)
+    resetForm()
+  } catch (error) {
+    console.error(error)
+    message.value = "Erro ao enviar currículo"
+  } finally {
+    loading.value = false
+  }
+}
+
+function resetForm() {
+  form.value = {
+    name: "",
+    email: "",
+    phone: "",
+    desired_role: "",
+    schooling: "",
+    observations: "",
+  }
+  file.value = null
+}
+</script>
